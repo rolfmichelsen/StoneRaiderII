@@ -1,0 +1,17 @@
+**********************
+*      'DIG-IT'      *
+*  MARCH-APRIL 1986  *
+*   ROLF MICHELSEN   *
+* (C) COPYRIGHT 1986 *
+**********************
+       SETDP $2400
+       ORG   $2400
+       PUT   $2400
+SWI1   EQU   $0107
+STAGE  EQU   $0640
+       GET   DIG-IT.PT1
+       GET   DIG-IT.PT2
+       GET   DIG-IT.PT3
+       GET   DIG-IT.PT4
+       GET   DIG-IT.PT5
+STAG1  EQU   *

@@ -1,0 +1,405 @@
+*
+* DEL 3
+TXT1   FCC   /SCORE :/,0
+       FCC   /BONUS :/,0
+       FCC   /POINTS:/,0
+       FCC   /LEFT  :/,0
+PRTTOP LDX   #TXT1
+       LDD   #$0000
+       JSR   TXTOUT
+       LDD   #$0008
+       JSR   TXTOUT
+       LDD   #$1600
+       JSR   TXTOUT
+       LDD   #$1608
+       JSR   TXTOUT
+       LDX   #MANR1
+       LDY   #3086
+       JSR   DRWGRP
+       LDX   #MANL1
+       LDY   #3091
+       JMP   DRWGRP
+CHRSET RMB   2
+DRWGRP PSHS  A,X,Y,U
+       LDA   #16
+LOOP7  LDU   ,X++
+       STU   ,Y
+       LEAY  32,Y
+       DECA
+       BNE   LOOP7
+       PULS  A,X,Y,U,PC
+DIRBUF FCB   0
+PRTNUM PSHS  D,X,Y
+       LDY   #TEGN+128
+       LDB   #8
+       MUL
+       LEAY  D,Y
+       LDA   #8
+LOOPB  LDB   ,Y+
+       STB   ,X
+       LEAX  32,X
+       DECA
+       BNE   LOOPB
+       PULS  D,X,Y,PC
+NUMBER LDA   ,Y+
+       BSR   PRTNUM
+       LEAX  1,X
+       DECB
+       BNE   NUMBER
+       RTS
+PSCORE LDX   #3079
+       LDY   #SCORE
+       LDB   #6
+       BRA   NUMBER
+ZEROSC LDD   #$0000
+       STD   SCORE
+       STD   SCORE+2
+       STD   SCORE+4
+       RTS
+PPOINT LDX   #3101
+       LDY   #POINTS
+       LDB   #3
+       BRA   NUMBER
+PLIVES LDA   LIVES
+       BSR   KONVRT
+       LDB   #3
+       LDX   #3216
+LAB2   LDY   #BYTES
+       BRA   NUMBER
+PBONUS LDA   BONUS
+       BSR   KONVRT
+       LDB   #3
+       LDX   #3335
+       BRA   LAB2
+PDLEFT LDA   DLEFT
+       BSR   KONVRT
+       LDB   #3
+       LDX   #3357
+       BRA   LAB2
+QUOT   RMB   1
+DIVID  RMB   1
+DIVIS  RMB   1
+DIV    PSHS  Y
+       STD   DIVID
+       CLRA
+       CLR   QUOT
+       LDB   DIVID
+       LDY   #$0008
+NSHIFT CMPY  #$0000
+       BEQ   DIVEND
+       LSLB
+       ROLA
+       LSL   QUOT
+       LEAY  -1,Y
+       CMPA  DIVIS
+       BLO   NSHIFT
+       SUBA  DIVIS
+       INC   QUOT
+       BRA   NSHIFT
+DIVEND TFR   A,B
+       LDA   QUOT
+       PULS  Y,PC
+KONVRT LDB   #100
+       BSR   DIV
+       STA   BYTES
+       TFR   B,A
+       LDB   #10
+       BSR   DIV
+       STA   BYTES+1
+       STB   BYTES+2
+       RTS
+DEXPLD LDA   #$8B
+       BRA   EXPLD
+NEXPLD LDA   #$82
+EXPLD  STA   BYTES+19
+       LEAU  -41,U
+       LDA   #3
+LOOPC  LDB   #3
+LOOPD  PSHS  B
+       LDB   ,U+
+       ANDB  #$0F
+       CMPB  #$0D
+       BHI   LAB3
+       CMPB  #$0A
+       BEQ   LAB3
+       LDB   BYTES+19
+       STB   -1,U
+LAB3   PULS  B
+       DECB
+       BNE   LOOPD
+       LEAU  37,U
+       DECA
+       BNE   LOOPC
+       JMP   EXPLOD
+TRIANG FCB   $00,$10,$20,$30,$40
+       FCB   $50,$60,$70,$80,$90
+       FCB   $A0,$B0,$C0,$D0,$E0
+       FCB   $F0,$FF,$F0,$E0,$D0
+       FCB   $C0,$B0,$A0,$90,$80
+       FCB   $70,$60,$50,$40,$30
+       FCB   $20,$10
+DECAY  RMB   1
+DURATN RMB   1
+SPEED  RMB   2
+POINT  RMB   3
+FREQ   RMB   3
+AMPL   RMB   1
+NOTAB  FDB   8294,8787,9310,9863
+       FDB   10450,11071,11730
+       FDB   12427,13166,13949
+       FDB   14778,15657
+MUSIC1 FDB   $0A10,$1010
+       FDB   $0A10,$0910,$0710
+       FDB   $0910,$0A10,$1010
+       FDB   $0510,$0A10,$0920
+       FDB   $0710,$0560,0
+MUSIC2 FDB   $0520,$0820,$0A10
+       FDB   $0810,$0520,$0520
+       FDB   $0820,$0A10,$0810
+       FDB   $0520,$1020,$0A10
+       FDB   $0810,$1020,$0A10
+       FDB   $0810,$0520,$0820
+       FDB   $0A10,$0810,$0520
+       FDB   0
+MELOD3 JSR   SNDON
+       LDU   #MUSIC3
+       LDA   #$F0
+       STA   DECAY
+       LDX   #$0080
+       STX   SPEED
+       BRA   MEL
+MELOD1 JSR   SNDON
+       LDU   #MUSIC1
+       LDA   #$F8
+       STA   DECAY
+       LDX   #130
+       STX   SPEED
+MEL    BSR   PLAY
+       JMP   SNDOFF
+MELOD2 JSR   SNDON
+       LDU   #MUSIC2
+       LDA   #$FE
+       STA   DECAY
+       LDX   #100
+       STX   SPEED
+       BRA   MEL
+PLAY   LDD   ,U
+       BEQ   PLAYEN
+       STB   DURATN
+       ANDA  #$0F
+       LDX   #NOTAB
+       ASLA
+       LDD   A,X
+       STD   FREQ+1
+       CLR   FREQ
+       LDA   ,U++
+PLAY0  ASL   FREQ+2
+       ROL   FREQ+1
+       ROL   FREQ
+       SUBA  #16
+       BHS   PLAY0
+       LDA   #$FF
+       STA   AMPL
+       LDX   #TRIANG
+PLAY2  LDY   SPEED
+       BSR   SOUND
+       LDA   AMPL
+       LDB   DECAY
+       MUL
+       STA   AMPL
+       DEC   DURATN
+       BNE   PLAY2
+       BRA   PLAY
+SOUND  LDD   POINT+1
+       ADDD  FREQ+1
+       STD   POINT+1
+       LDA   POINT
+       ADCA  FREQ
+       STA   POINT
+       ANDA  #31
+       LDA   A,X
+       LDB   AMPL
+       MUL
+       ANDA  #$FC
+       STA   $FF20
+       LEAY  -1,Y
+       BNE   SOUND
+PLAYEN RTS
+SND2A  CLR   VOLUM
+       LDX   #$B798
+       LDA   $FF23
+       ORA   #$08
+       STA   $FF23
+LOOP33 LDA   ,X+
+       ANDA  VOLUM
+       STA   $FF20
+       DEC   VOLUM
+       BNE   LOOP33
+       BRA   DISABL
+SND3A  LDD   #$B435
+       STA   $FF01
+       STB   $FF03
+       LDA   $FF23
+       ORA   #$08
+       STA   $FF23
+       LDD   #$2800
+       STD   FREQ
+       CLR   FREQ+2
+       LDX   #TRIANG
+       LDU   #2
+LOOP35 LDY   #1
+       BSR   SOUND
+       DEC   AMPL
+       DEC   AMPL
+       BEQ   DISABL
+       LEAU  -1,U
+       BNE   LOOP35
+       RTI
+ROM    RMB   2
+SND4A  LDA   $FF23
+       ORA   #$08
+       STA   $FF23
+       LDX   #SND4B
+       STX   SWI1
+       LDX   ROM
+       LDA   ,X+
+       ANDA  VOLUM
+       STA   $FF20
+       STX   ROM
+GO     BRA   OFF
+SND4B  LDA   $FF23
+       ORA   #$08
+       STA   $FF23
+       LDX   #SND4A
+       STX   SWI1
+       LDX   ROM
+       LDA   ,X+
+       ANDA  VOLUM
+       STA   $FF20
+       STX   ROM
+       DEC   VOLUM
+       BNE   GO
+DISABL CLR   SNDTYP
+       LDX   #NSOUND
+       STX   SWI1
+       BRA   OFF
+OFF    LDA   $FF23
+       ANDA  #$F7
+       STA   $FF23
+NSOUND RTI
+SND5A  JSR   SNDON
+       LDA   VOLUM
+       JSR   MSOUND
+       LDX   #SND5B
+       STX   SWI1
+       BRA   OFF
+SND5B  LDX   #SND5A
+       STX   SWI1
+       JSR   SNDON
+       CLRA
+       JSR   MSOUND
+       DEC   VOLUM
+       BNE   GO
+       BRA   DISABL
+WALLM  LDA   -1,X
+       ANDA  #$0F
+       CMPA  #$08
+       BEQ   OKMOV
+       RTS
+OKMOV  LDA   #$8D
+       STA   -1,X
+       JMP   EXPLOD
+LNGTXT FCC   /                 /
+       FCC   /               /
+       FCC   /** PRESS BUTTON A/
+       FCC   /T ANY TIME TO STA/
+       FCC   /RT GAME ** 'DIG-I/
+       FCC   /T' WAS WRITTEN MA/
+       FCC   /INLY IN MARCH AND/
+       FCC   / APRIL 1986 BY RO/
+       FCC   /LF MICHELSEN ON A/
+       FCC   / DRAGON 64 ** YOU/
+       FCC   /R MISSION IN THIS/
+       FCC   / GAME IS TO GUIDE/
+       FCC   / OUR HERO, MARIO,/
+       FCC   / TROUGH A VAST NU/
+       FCC   /MBER OF CAVES. IN/
+       FCC   / EACH CAVE HE MUS/
+       FCC   /T PICK UP A NUMBE/
+       FCC   /R OF GEMS TO DISC/
+       FCC   /OVER THE EXIT BEF/
+       FCC   /ORE THE TIME RUNS/
+       FCC   / OUT. A LOT OF MO/
+       FCC   /NSTERS AND OBSTAC/
+       FCC   /LES ARE LOCATED A/
+       FCC   /ROUND THE CAVES T/
+       FCC   /O MAKE THINGS A B/
+       FCC   /IT HARDER. IN ADD/
+       FCC   /ITION TO THE NORM/
+       FCC   /AL OBSTACLES, THE/
+       FCC   /RE IS ALSO A WIZ/
+       FCC   /ARD WHO ENJOYS PR/
+       FCC   /ACTISING HIS WIZA/
+       FCC   /RDRY ON THE DIFFE/
+       FCC   /RENT OBJECTS IN T/
+       FCC   /HE GAME! ** USE T/
+       FCC   /HE RIGHT HAND JOY/
+       FCC   /STICK TO CONTROL /
+       FCC   /POOR MARION AROUN/
+       FCC   /D THE CAVES. YOU /
+       FCC   /CAN PAUSE THE GAM/
+       FCC   /E AT ANY TIME BY /
+       FCC   /PRESSING THE SPAC/
+       FCC   /E BAR. BREAK WILL/
+       FCC   /MAKE YOU LOOSE ON/
+       FCC   /E LIFE. (THIS IS /
+       FCC   /USEFUL WHEN YOU A/
+       FCC   /RE TRAPPED BEHIND/
+       FCC   / BOULDERS!) TO QU/
+       FCC   /IT THE GAME, PRES/
+       FCC   /S 'Q'. IF YOU ARE/
+       FCC   / BORED OF THE FIR/
+       FCC   /ST CAVE AND ARE U/
+       FCC   /NABLE TO GET ANY /
+       FCC   /FURTHER, PRESS 'R/
+       FCC   /' DURING THE TITL/
+       FCC   /E SCREEN TO ACTIV/
+       FCC   /ATE THE 'RANDOMIZ/
+       FCC   /E MODE'. ** AT LA/
+       FCC   /ST - SOME HINTS: /
+       FCC   /THE MONSTERS WILL/
+       FCC   / DIE IF THEY ARE /
+       FCC   /HIT BY A FALLING /
+       FCC   /OBJECT OR IF THEY/
+       FCC   / TOUCH THE SLIME./
+       FCC   / SOME MONSTERS WI/
+       FCC   /LL TURN INTO GEMS/
+       FCC   / WHEN THEY DIE! Y/
+       FCC   /OU CAN MAKE HOLES/
+       FCC   / IN SOME OF THE W/
+       FCC   /ALLS BY KILLING A/
+       FCC   / MOSTER. IF THE S/
+       FCC   /LIME GROWS TO BIG/
+       FCC   /, IT WILL DIE AND/
+       FCC   / TURN INTO STONE./
+       FCC   / IF YOU ARE ABLE /
+       FCC   /TO BLOCK IT, IT W/
+       FCC   /ILL TURN INTO GEM/
+       FCC  /S!! THE SLIME CAN /
+       FCC   /NOT EAT BOULDERS,/
+       FCC   / GEMS, WALLS OR M/
+       FCC   /ARIO. AT EVERY 50/
+       FCC   /0 POINT YOU WILL /
+       FCC   /RECEIVE A BONUS M/
+       FCC   /AN - USE HIM WELL/
+       FCC   /! ** I HOPE YOU W/
+       FCC   /ILL ENJOY PLAYING/
+       FCC   / THIS GAME FOR A /
+       FCC   /LONG, LONG TIME! /
+       FCC   /** PLEASE DON'T A/
+       FCC   /CCEPT AN ILLEGAL /
+       FCC   /COPY OF 'DIG-IT'./
+       FCC   / **/
+TXTEND FCC   /                 /
+       FCC   /               /
+ 

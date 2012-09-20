@@ -1,0 +1,646 @@
+*
+* DEL 4
+TSTMAN LDB   #$10
+       LDA   -40,X
+       CMPA  #$06
+       BEQ   FOUNDF
+       LDB   #$20
+       LDA   1,X
+       CMPA  #$06
+       BEQ   FOUNDF
+       LDB   #$30
+       LDA   40,X
+       CMPA  #$06
+       BEQ   FOUNDF
+       LDB   #$40
+       LDA   -1,X
+       CMPA  #$06
+       BEQ   FOUNDF
+       ANDCC #$FE
+       RTS
+FOUNDF ORCC  #$01
+       RTS
+TSTFLT ANDA  #$0F
+       CMPA  #$06
+       BLO   NOMOVS
+       CMPA  #$08
+       BHI   NOMOVS
+       ORCC  #$01
+       RTS
+NOMOVS ANDCC #$FE
+       RTS
+TSTUP  LEAU  -40,X
+       LDA   ,U
+       CMPA  #$9B
+       BEQ   LAB15
+       CMPA  #$9C
+       BNE   LAB16
+LAB15  LEAS  2,S
+       TFR   X,U
+       JMP   ,Y
+LAB16  LDB   #$10
+       LDA   ,U
+       BRA   TSTFLT
+TSTRGT LDB   #$20
+       LDA   1,X
+       BRA   TSTFLT
+TSTDWN LDB   #$30
+       LDA   40,X
+       BRA   TSTFLT
+TSTLFT LDB   #$40
+       LDA   -1,X
+       BRA   TSTFLT
+SKULLM LDY   #DEXPLD
+LAB4   SWI
+       JSR   TSTMAN
+       BCS   MOVES
+       SWI
+       LDA   ,X
+       ANDA  #$F0
+       CMPA  #$40
+       BEQ   SLEFT
+       CMPA  #$30
+       BEQ   SDOWN
+       CMPA  #$20
+       BEQ   SRIGHT
+SUP    JSR   TSTRGT
+       BCS   MOVES
+       JSR   TSTUP
+       BCS   MOVES
+       JSR   TSTLFT
+       BCS   MOVES
+       JSR   TSTDWN
+       BCS   MOVES
+       BRA   STANDS
+SLEFT  JSR   TSTUP
+       BCS   MOVES
+       JSR   TSTLFT
+       BCS   MOVES
+       JSR   TSTDWN
+       BCS   MOVES
+       JSR   TSTRGT
+       BCS   MOVES
+       BRA   STANDS
+SDOWN  JSR   TSTLFT
+       BCS   MOVES
+       JSR   TSTDWN
+       BCS   MOVES
+       JSR   TSTRGT
+       BCS   MOVES
+       JSR   TSTUP
+       BCS   MOVES
+       BRA   STANDS
+SRIGHT JSR   TSTDWN
+       BCS   MOVES
+       JSR   TSTRGT
+       BCS   MOVES
+       JSR   TSTUP
+       BCS   MOVES
+       JSR   TSTLFT
+       BCS   MOVES
+STANDS CLRB
+MOVES  SWI
+       ORB   #$80
+       TFR   X,U
+       CMPB  #$90
+       BNE   S1
+       LEAU  -40,U
+S1     CMPB  #$A0
+       BNE   S2
+       LEAU  1,U
+S2     CMPB  #$B0
+       BNE   S3
+       LEAU  40,U
+S3     CMPB  #$C0
+       BNE   S4
+       LEAU  -1,U
+S4     SWI
+       LDA   ,U
+       ANDA  #$0F
+       CMPA  #$02
+       BLO   LAB13
+       CMPA  #$08
+       LBLO  DEXPLD
+       LDA   #$88
+       STA   ,X
+LAB13  STB   ,U
+       RTS
+ALIENM LDY   #NEXPLD
+       SWI
+       JSR   TSTMAN
+       BCS   MOVEA
+       SWI
+       LDA   ,X
+       ANDA  #$F0
+       CMPA  #$40
+       BEQ   ALEFT
+       CMPA  #$30
+       BEQ   ADOWN
+       CMPA  #$20
+       BEQ   ARIGHT
+AUP    JSR   TSTLFT
+       BCS   MOVEA
+       JSR   TSTUP
+       BCS   MOVEA
+       JSR   TSTRGT
+       BCS   MOVEA
+       JSR   TSTDWN
+       BCS   MOVEA
+       BRA   STANDA
+ALEFT  JSR   TSTDWN
+       BCS   MOVEA
+       JSR   TSTLFT
+       BCS   MOVEA
+       JSR   TSTUP
+       BCS   MOVEA
+       JSR   TSTRGT
+       BCS   MOVEA
+       BRA   STANDA
+ADOWN  JSR   TSTRGT
+       BCS   MOVEA
+       JSR   TSTDWN
+       BCS   MOVEA
+       JSR   TSTLFT
+       BCS   MOVEA
+       JSR   TSTUP
+       BCS   MOVEA
+       BRA   STANDA
+ARIGHT JSR   TSTUP
+       BCS   MOVEA
+       JSR   TSTRGT
+       BCS   MOVEA
+       JSR   TSTDWN
+       BCS   MOVEA
+       JSR   TSTLFT
+       BCS   MOVEA
+STANDA CLRB
+MOVEA  SWI
+       ORB   #$81
+       TFR   X,U
+       CMPB  #$91
+       BNE   A1
+       LEAU  -40,U
+A1     CMPB  #$A1
+       BNE   A2
+       LEAU  1,U
+A2     CMPB  #$B1
+       BNE   A3
+       LEAU  40,U
+A3     CMPB  #$C1
+       BNE   A4
+       LEAU  -1,U
+A4     SWI
+       LDA   ,U
+       ANDA  #$0F
+       CMPA  #$02
+       BLO   LAB14
+       CMPA  #$08
+       LBLO  NEXPLD
+       LDA   #$88
+       STA   ,X
+LAB14  STB   ,U
+       RTS
+TXT5   FCC   /BY: ROLF MICHELSE/
+       FCC   /N/,0
+TXT6   FCC   /(C) COPYRIGHT - /
+       FCC   /1986/,0
+TXT7   FCC   /HIGH  SCORES/,0
+TXT8   FCC   /############/,0
+HIGHS  FCC   /MARIO   000500/,0
+       FCC   /MARIO   000500/,0
+       FCC   /MARIO   000500/,0
+       FCC   /MARIO   000500/,0
+       FCC   /MARIO   000500/,0
+JUMPS  FDB   SKULLM
+       FDB   ALIENM
+       FDB   EXP1
+       FDB   EXP2
+       FDB   EXP3
+       FDB   EXP4
+       FDB   MANM
+       FDB   SLIMEM
+       FDB   NOT
+       FDB   NOT
+       FDB   NOT
+       FDB   GEMM
+       FDB   BOULDM
+       FDB   NOT
+       FDB   NOT
+       FDB   NOT
+NOT    RTS
+EXP1   LDA   #$83
+       STA   ,X
+       RTS
+EXP2   LDA   #$84
+       STA   ,X
+       RTS
+EXP3   LDA   #$85
+       STA   ,X
+       RTS
+EXP4   LDA   #$88
+       STA   ,X
+       RTS
+SFLAG1 RMB   1
+SFLAG2 RMB   1
+RAND   RMB   2
+RND    LDD   RAND
+       ADDA  RAND+1
+       ASLB
+       ROLA
+       ADDA  RAND+1
+       ASLB
+       ROLA
+       ADDD  RAND
+       ADDD  #13849
+       STD   RAND
+       RTS
+TEST   ANDA  #$0F
+       CMPA  #$08
+       BEQ   FNDGAP
+       CMPA  #$09
+       BEQ   FNDGAP
+       ANDCC #$FE
+       RTS
+FNDGAP ORCC  #$01
+       RTS
+AROUND BSR   STUP
+       BCS   GAPFND
+       BSR   STRGT
+       BCS   GAPFND
+       BSR   STDWN
+       BCS   GAPFND
+       BSR   STLFT
+GAPFND RTS
+STUP   LDA   -40,X
+       BRA   TEST
+STRGT  LDA   1,X
+       BRA   TEST
+STDWN  LDA   40,X
+       BRA   TEST
+STLFT  LDA   -1,X
+       BRA   TEST
+SLIMEM SWI
+       INC   SFLAG1
+       LDA   #$87
+       STA   ,X
+       BSR   AROUND
+       BCC   GAPFND
+       CLR   SFLAG2
+       BSR   RND
+       SWI
+       ANDA  #63
+       CMPA  #4
+       BLO   MOVSLM
+       RTS
+MOVSLM LDA   RAND+1
+       ANDA  #$30
+       BEQ   SLMUP
+       CMPA  #$10
+       BEQ   SLMRGT
+       CMPA  #$20
+       BEQ   SLMDWN
+SLMLFT BSR   STLFT
+       BCC   BACK2
+       LEAU  -1,X
+       BRA   MSLIM
+SLMUP  BSR   STUP
+       BCC   BACK2
+       LEAU  -40,X
+       BRA   MSLIM
+SLMRGT BSR   STRGT
+       BCC   BACK2
+       LEAU  1,X
+       BRA   MSLIM
+SLMDWN BSR   STDWN
+       BCC   BACK2
+       LEAU  40,X
+MSLIM  SWI
+       LDA   #$87
+       STA   ,U
+BACK2  RTS
+PUFF   RMB   1
+ALIVE  RMB   1
+MANM   SWI
+       CLR   ALIVE
+       LDD   $015A
+       CMPA  #2
+       BLO   MANLFT
+       CMPA  #61
+       BHI   MANRGT
+       CMPB  #2
+       BLO   MANUP
+       CMPB  #61
+       BHI   MANDWN
+       RTS
+MANLFT LDU   #MANL1
+       STU   DIR
+       LDB   #$40
+       LEAU  -1,X
+       BRA   MANMOV
+MANRGT LDU   #MANR1
+       STU   DIR
+       LDB   #$20
+       LEAU  1,X
+       BRA   MANMOV
+MANUP  LDB   #$10
+       LEAU  -40,X
+       BRA   MANMOV
+MANDWN LDB   #$30
+       LEAU  40,X
+MANMOV SWI
+       LDA   ,U
+       ANDA  #$0F
+       LBEQ  DEXPLD
+       CMPA  #$06
+       LBLO  NEXPLD
+       CMPA  #$0A
+       LBEQ  EXIT
+       CMPA  #$0B
+       LBEQ  GFOUND
+       CMPA  #$0C
+       LBEQ  BFOUND
+       SWI
+       CMPA  #$08
+       BEQ   MOVE
+       CMPA  #$09
+       BEQ   MOVE
+       RTS
+MOVE   LDA   $FF00
+       ANDA  #$01
+       BEQ   BLKSQR
+       CMPB  #$10
+       BEQ   SCRUP
+       CMPB  #$20
+       BEQ   SCRRGT
+       CMPB  #$30
+       BEQ   SCRDWN
+SCRLFT DEC   XCOO
+       BRA   LABD
+SCRUP  DEC   YCOO
+       BRA   LABD
+SCRRGT INC   XCOO
+       BRA   LABD
+SCRDWN INC   YCOO
+LABD   SWI
+       LDA   BASE
+       LDB   YCOO
+       CMPB  #4
+       BHI   Q0
+       TSTA
+       BEQ   Q1
+       INC   YCOO
+       DEC   BASE
+       BRA   LABE
+Q0     CMPB  #6
+       BLO   Q1
+       CMPA  #$0E
+       BEQ   Q1
+       DEC   YCOO
+       INC   BASE
+       BRA   LABE
+Q1     LDA   BASE+1
+       LDB   XCOO
+       CMPB  #6
+       BHI   Q2
+       TSTA
+       BEQ   LABF
+       INC   XCOO
+       DEC   BASE+1
+       BRA   LABE
+Q2     CMPB  #9
+       BLO   LABF
+       CMPA  #$18
+       BEQ   LABF
+       DEC   XCOO
+       INC   BASE+1
+LABE   SWI
+LABF   LDD   #$8886
+       STA   ,X
+       STB   ,U
+       JMP   FRDMOV
+BLKSQR LDA   #$88
+       STA   ,U
+BACK3  RTS
+BFOUND TFR   B,A
+       ANDA  #$10
+       BNE   BACK3
+       CMPB  #$20
+       BNE   LAB9
+       LEAY  1,U
+       BRA   LABA
+LAB9   LEAY  -1,U
+LABA   LDA   ,Y
+       ANDA  #$0F
+       CMPA  #$08
+       BNE   BACK3
+       DEC   PUFF
+       BNE   BACK3
+       LDA   #10
+       STA   PUFF
+       LDA   #$8C
+       STA   ,Y
+       JSR   EXPLOD
+       JMP   MOVE
+GFOUND LDA   ,U
+       ANDA  #$70
+       BEQ   LAB1C
+       RTS
+LAB1C  PSHS  B,X
+       LDD   POINTS
+       ADDD  SCORE+3
+       STD   SCORE+3
+       LDA   POINTS+2
+       ADDA  SCORE+5
+       STA   SCORE+5
+       JSR   TSTSCR
+       TST   DLEFT
+       BEQ   LABC
+       DEC   DLEFT
+LABC   JSR   PSCORE
+       JSR   PDLEFT
+       JSR   GEMTAK
+       PULS  B,X
+       JMP   MOVE
+BACK9  RTS
+BOULDM SWI
+       LDY   #EXPLOD
+       LDA   ,X
+       ANDA  #$70
+       BEQ   LAB2F
+       BSR   TSTDIR
+       BCS   MOVEB
+LAB2F  SWI
+       BSR   FNDDIR
+       BCC   BACK4
+MOVEB  SWI
+       LDA   ,U
+       ANDA  #$0F
+       LBEQ  DEXPLD
+       CMPA  #$01
+       LBEQ  NEXPLD
+       CMPA  #$05
+       BHI   LAB12
+       LDA   #$88
+       STA   ,X
+       RTS
+LAB12  CMPA  #$06
+       LBEQ  NEXPLD
+       LDD   #$889C
+       STA   ,X
+       STB   ,U
+BACK4  RTS
+TSTDIR LDA   40,X
+       ANDA  #$0F
+       CMPA  #$07
+       BLO   OKDIR
+       CMPA  #$08
+       BEQ   OKDIR
+       JSR   ,Y
+NODIR  LDA   ,X
+       ANDA  #$0F
+       STA   ,X
+       ANDCC #$FE
+       RTS
+OKDIR  LEAU  40,X
+       ORCC  #$01
+       RTS
+FNDDIR LEAU  40,X
+       LDA   ,U
+       ANDA  #$0F
+       CMPA  #$08
+       BEQ   OKDIR2
+       CMPA  #$08
+       BLO   NODIR2
+       CMPA  #$0A
+       BEQ   NODIR2
+       CMPA  #$0D
+       BHI   NODIR2
+       CMPA  #$09
+       BEQ   NODIR2
+       LEAU  -1,X
+       LDA   ,U
+       ANDA  #$0F
+       CMPA  #$08
+       BNE   LAB10
+       LDA   39,X
+       ANDA  #$0F
+       CMPA  #$08
+       BEQ   OKDIR2
+LAB10  LEAU  1,X
+       LDA   ,U
+       ANDA  #$0F
+       CMPA  #$08
+       BNE   NODIR2
+       LDA   41,X
+       ANDA  #$0F
+       CMPA  #$08
+       BNE   NODIR2
+OKDIR2 JSR   ,Y
+       ORCC  #$01
+       RTS
+NODIR2 ANDCC #$FE
+BACK5  RTS
+GEMM   SWI
+       LDY   #GEMFAL
+       LDA   ,X
+       ANDA  #$70
+       BEQ   LAB30
+       BSR   TSTDIR
+       BCS   MOVEG
+LAB30  SWI
+       BSR   FNDDIR
+       BCC   BACK5
+MOVEG  SWI
+       LDA   ,U
+       ANDA  #$0F
+       LBEQ  DEXPLD
+       CMPA  #$01
+       LBEQ  NEXPLD
+       CMPA  #$05
+       BHI   LAB11
+       LDA   #$88
+       STA   ,X
+       RTS
+LAB11  CMPA  #$06
+       LBEQ  NEXPLD
+       LDD   #$889B
+       STA   ,X
+       STB   ,U
+       RTS
+COUNT  RMB   1
+TXT2   FCC   /-- TIME OUT --/,0
+TSTSCR PSHS  D,X,Y
+       LDX   #SCORE+6
+LOOP10 LDA   ,-X
+       CMPA  #10
+       BLO   LABB
+       CLR   ,X
+       INC   -1,X
+LABB   CMPX  #SCORE
+       BNE   LOOP10
+       LDD   #$0000
+       CMPD  SCORE+4
+       BNE   LAB1A
+       TST   SCORE+3
+       BEQ   EXLIVE
+       LDA   #5
+       CMPA  SCORE+3
+       BNE   LAB1A
+EXLIVE LDA   LIVES
+       CMPA  #255
+       BEQ   LAB1A
+       INC   LIVES
+       JSR   PLIVES
+LAB1A  PULS  D,X,Y,PC
+EXIT   LEAS  4,S
+       JSR   HIRES
+       JSR   SNDON
+       LDB   #1
+LOOP15 TST   BONUS
+       BEQ   LAB1B
+       INC   SCORE+5
+       INC   SCORE+5
+       DEC   BONUS
+       PSHS  B
+       JSR   TSTSCR
+       JSR   PSCORE
+       JSR   PBONUS
+       PULS  B
+       LDA   #63
+       JSR   MSOUND
+       JSR   PITCH
+       CLRA
+       JSR   MSOUND
+       JSR   PITCH
+       INCB
+       BRA   LOOP15
+LAB1B  JSR   SNDOFF
+       LDA   CCAVE
+       CMPA  MAXSTG
+       BEQ   LAB22
+       INC   CCAVE
+       BRA   LAB23
+LAB22  LDA   #1
+       STA   CCAVE
+LAB23  LDX   #$0000
+LOOP27 LEAX  -1,X
+       BNE   LOOP27
+       JMP   NCAVE
+WSOUND PSHS  B
+LOOP1C STB   $FF20
+       INCB
+       BNE   LOOP1C
+       PULS  B,PC
+WULF   JSR   SNDON
+       LDA   #2
+LOOP1D CLRB
+LOOP1E BSR   WSOUND
+       INCB
+       BNE   LOOP1E
+       DECA
+       BNE   LOOP1D
+       SUBB  #2
+LOOP1F BSR   WSOUND
+       DECB
+       BNE   LOOP1F
+       JMP   SNDOFF

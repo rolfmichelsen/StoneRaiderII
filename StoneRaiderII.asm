@@ -155,7 +155,7 @@ LOOP1  LDA   ,X+
        DECB
        BNE   LOOP1
        PULS  D,X,Y,PC
-@START CLR   $FF48
+START  CLR   $FF48
        LDA   #255
        STA   246
        LDX   #$9D3D
@@ -735,18 +735,12 @@ LIGHT  FDB   $01F0,$03E0,$07C0
        FDB   $03E0,$27C0,$3F80
        FDB   $3F00,$3E00,$3E00
        FDB   $3F00
-TXTE   FCC   /CHEAT MODE/
-       FCB   0
-       FCC   /##########/
-       FCB   0
-       FCC   /1 NUMBER OF LIVES/
-       FCB   0
-       FCC   /2 STARTING CAVE/
-       FCB   0
-       FCC   /3 BONUS SPEED/
-       FCB   0
-       FCC   /Q QUIT CHEAT MODE/
-       FCB   0
+TXTE   FCC   /CHEAT MODE/,0
+       FCC   /##########/,0
+       FCC   /1 NUMBER OF LIVES/,0
+       FCC   /2 STARTING CAVE/,0
+       FCC   /3 BONUS SPEED/,0
+       FCC   /Q QUIT CHEAT MODE/,0
 SLMSD1 FDB   $0010,$0210,$0410,0
 SLMSD2 FDB   $0610,$0410,$0210,0
 EFLAG  RMB   1
@@ -813,14 +807,10 @@ STONE  LDA   #$FC
        STA   -40,X
        JMP   EXPLOD
 
-TXT1   FCC   /SCORE :/
-       FCB   0
-       FCC   /BONUS :/
-       FCB   0
-       FCC   /POINTS:/
-       FCB   0
-       FCC   /LEFT  :/
-       FCB   0
+TXT1   FCC   /SCORE :/,0
+       FCC   /BONUS :/,0
+       FCC   /POINTS:/,0
+       FCC   /LEFT  :/,0
 PRTTOP LDX   #TXT1
        LDD   #$0000
        JSR   TXTOUT
@@ -1421,25 +1411,16 @@ A4     SWI
 LAB14  STB   ,U
        RTS
 TXT5   FCC   /BY: ROLF MICHELSE/
-       FCC   /N/
-       FCB   0
+       FCC   /N/,0
 TXT6   FCC   /(C) COPYRIGHT - /
-       FCC   /1986/
-       FCB   0
-TXT7   FCC   /HIGH  SCORES/
-       FCB   0
-TXT8   FCC   /############/
-       FCB   0
-HIGHS  FCC   /MARIO   000500/
-       FCB   0
-       FCC   /MARIO   000500/
-       FCB   0
-       FCC   /MARIO   000500/
-       FCB   0
-       FCC   /MARIO   000500/
-       FCB   0
-       FCC   /MARIO   000500/
-       FCB   0
+       FCC   /1986/,0
+TXT7   FCC   /HIGH  SCORES/,0
+TXT8   FCC   /############/,0
+HIGHS  FCC   /MARIO   000500/,0
+       FCC   /MARIO   000500/,0
+       FCC   /MARIO   000500/,0
+       FCC   /MARIO   000500/,0
+       FCC   /MARIO   000500/,0
 JUMPS  FDB   SKULLM
        FDB   ALIENM
        FDB   EXP1
@@ -1797,8 +1778,7 @@ LAB11  CMPA  #$06
        STB   ,U
        RTS
 COUNT  RMB   1
-TXT2   FCC   /-- TIME OUT --/
-       FCB   0
+TXT2   FCC   /-- TIME OUT --/,0
 TSTSCR PSHS  D,X,Y
        LDX   #SCORE+6
 LOOP10 LDA   ,-X
@@ -1876,10 +1856,8 @@ LOOP1F BSR   WSOUND
        JMP   SNDOFF
 
 TILF   RMB   1
-TXT19  FCC   /** RANDOMIZE! **/
-       FCB   0
-TXT1A  FCC   /                /
-       FCB   0
+TXT19  FCC   /** RANDOMIZE! **/,0
+TXT1A  FCC   /                /,0
 TXTOUT STD   CURSET
        JMP   STROUT
 GAME   NOP
@@ -1960,10 +1938,8 @@ BLIVES FCB   3
 BCAVE  FCB   1
 BSPEED FCB   20
 CCAVE  RMB   1
-TXT9   FCC   /CAN YOU ESCAPE/
-       FCB   0
-TXTA   FCC   /CAVE NO   ??/
-       FCB   0
+TXT9   FCC   /CAN YOU ESCAPE/,0
+TXTA   FCC   /CAVE NO   ??/,0
 CALC   LDX   #STAG1-509
        LDB   CCAVE
 LOOP3C LEAX  509,X
@@ -2035,11 +2011,9 @@ LOOP47 LDA   ,X+
        BNE   LOOP47
        BRA   START2
 TXT17  FCC   /WATCH OUT FOR THE/
-       FCC   / SLIME!/
-       FCB   0
+       FCC   / SLIME!/,0
 TXT18  FCC   /THE WIZARD IS OUT/
-       FCC   /!/
-       FCB   0
+       FCC   /!/,0
 FSLIME LDX   #TXT17
        LDD   #$0480
        JSR   TXTOUT
@@ -2285,8 +2259,7 @@ LOOP23 STD   ,X++
        BLO   LOOP23
        RTS
 TXTB   FCC   /PAUSE - PRESS /
-       FCC   /BUTTON/
-       FCB   0
+       FCC   /BUTTON/,0
 PAUSE  BSR   BLKTOP
        LDD   #$0604
        LDX   #TXTB
@@ -2332,8 +2305,7 @@ LAB24  LDY   BYTES
        BNE   LOOP24
        JMP   TITLES
 TXTD   FCC   /WHAT IS YOUR /
-       FCC   /NAME?/
-       FCB   0
+       FCC   /NAME?/,0
 ENAME  LDD   BYTES
        CMPD  #HIGHS+68
        BEQ   ENAME2
@@ -2519,8 +2491,7 @@ PRTTAL JSR   KONVRT
        LDB   #2
        JMP   NUMBER
 
-STAG1  EQU   *
-       INCLUDEBIN cave01.dat
+STAG1  INCLUDEBIN cave01.dat
        INCLUDEBIN cave02.dat
        INCLUDEBIN cave03.dat
        INCLUDEBIN cave04.dat
@@ -2545,3 +2516,5 @@ STAG1  EQU   *
        INCLUDEBIN cave23.dat
        INCLUDEBIN cave24.dat
        INCLUDEBIN cave25.dat
+
+       END START

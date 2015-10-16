@@ -1,7 +1,7 @@
 Stone Raider II
 ===============
 
-&copy; Copyright 1986, 2009-2012 Rolf Michelsen  
+&copy; Copyright 1986, 2009-2015 Rolf Michelsen  
 All rights reserved  
 
 
@@ -32,7 +32,20 @@ Note that this source code is not for the version that was actually released and
 Building
 --------
 
-The source code was originally written for the *Dskdream* assembler.  It is possible to build the game by running the source code through a compatible assembler and then concatenating the data for the caves.  The source code defines a label, STAG1, which designates the beginning of the data for cave 1.  The data for cave 2 should follow immediately after the data for cave 1, and so on...  In the future, I'll look into a PC-hosted build environment.
+The source code was originally written for the *Dskdream* assembler.  Thanks to KanSpain, the source code has been modified to build with a Windows or Linux hosted development environment.  You will need the following tools for building:
+
+* [lwtools](http://lwtools.projects.l-w.ca/)
+* [bin2cas.pl](http://www.6809.org.uk/dragon/)
+
+Currently, the source code uses lwtools features not officially release so a developer snapshot of lwtools is needed.
+
+Compile the game into a CAS file with the following commands:
+
+```bash
+lwasm -9 -b --pragma=m80ext -o StoneRaiderII.bin StoneRaiderII.asm
+bin2cas.pl -o StoneRaiderII.cas -n STONRAID --autorun -C StoneRaiderII.bin
+```
+
 
 
 Representation of caves

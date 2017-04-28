@@ -37,8 +37,6 @@ The source code was originally written for the *Dskdream* assembler.  Thanks to 
 * [lwtools](http://lwtools.projects.l-w.ca/)
 * [bin2cas.pl](http://www.6809.org.uk/dragon/)
 
-Currently, the source code uses lwtools features not officially release so a developer snapshot of lwtools is needed.
-
 Compile the game into a CAS file with the following commands:
 
 ```bash

@@ -9,6 +9,8 @@
        ORG   $2400
 
 SWI1   EQU   $0107
+
+; Memory location for storing the state for the current stage being played.
 STAGE  EQU   $0640
 
 TEGN   FCB   $00,$00,$00,$00,$00
@@ -652,7 +654,7 @@ LOOP3  LDU   ,Y++
 BYTES  RMB   20
 BONUS  RMB   1
 POINTS RMB   3
-DLEFT  RMB   1
+DLEFT  RMB   1                     ; number of diamonds required to reveal exit
 BASE   RMB   2
 YCOO   RMB   1
 XCOO   RMB   1
@@ -689,7 +691,8 @@ FRDMOV PSHS  D
        LDD   #SND2A
        STD   SWI1
 BACK11 PULS  D,PC
-GEMFAL PSHS  D
+
+GEMFAL PSHS  D                            ; play sound for diamond falling
        LDA   #3
        CMPA  SNDTYP
        BEQ   BACK12
@@ -699,7 +702,8 @@ GEMFAL PSHS  D
        LDA   #254
        STA   AMPL
 BACK12 PULS  D,PC
-EXPLOD PSHS  D
+
+EXPLOD PSHS  D                            ; play sound for boulder falling
        LDA   #4
        STA   SNDTYP
        LDD   #SND4A
@@ -708,7 +712,8 @@ EXPLOD PSHS  D
        LDD   #$B798
        STD   ROM
        PULS  D,PC
-GEMTAK PSHS  D
+
+GEMTAK PSHS  D                            ; play sound for diamond taken
        LDA   #5
        STA   SNDTYP
        LDA   #63
@@ -716,6 +721,7 @@ GEMTAK PSHS  D
        LDD   #SND5A
        STD   SWI1
 BACK13 PULS  D,PC
+
 MAXSTG FCB   25
 MUSIC3 FDB   $0810,$1010,$1308
        FDB   $1308,$1308,$1308
@@ -744,7 +750,13 @@ TXTE   FCC   /CHEAT MODE/,0
 SLMSD1 FDB   $0010,$0210,$0410,0
 SLMSD2 FDB   $0610,$0410,$0210,0
 EFLAG  RMB   1
+
+; Sound currently being played
+; 3 falling diamond
+; 4 falling boulder / explosion
+; 5 diamond taken
 SNDTYP RMB   1
+
 SNDON  PSHS  D,U
        CLRB
        JSR   $BD41
@@ -1210,6 +1222,17 @@ LNGTXT FCC   /                 /
 TXTEND FCC   /                 /
        FCC   /               /
 
+; Test for adjacent player character.
+;
+; Input:
+;   x     Pointer to cave cell from which to look for player.
+;
+; Output:
+;   cc.c  Set if player has been found
+;   b     Direction of player
+;         ($10 = up, $20 = right, $30 = down, $40 = left)
+;
+; Destroyed: a
 TSTMAN LDB   #$10
        LDA   -40,X
        CMPA  #$06
@@ -1230,6 +1253,7 @@ TSTMAN LDB   #$10
        RTS
 FOUNDF ORCC  #$01
        RTS
+
 TSTFLT ANDA  #$0F
        CMPA  #$06
        BLO   NOMOVS
@@ -1260,6 +1284,8 @@ TSTDWN LDB   #$30
 TSTLFT LDB   #$40
        LDA   -1,X
        BRA   TSTFLT
+
+; Move skull monster.
 SKULLM LDY   #DEXPLD
 LAB4   SWI
        JSR   TSTMAN
@@ -1421,23 +1447,33 @@ HIGHS  FCC   /MARIO   000500/,0
        FCC   /MARIO   000500/,0
        FCC   /MARIO   000500/,0
        FCC   /MARIO   000500/,0
-JUMPS  FDB   SKULLM
-       FDB   ALIENM
-       FDB   EXP1
-       FDB   EXP2
-       FDB   EXP3
-       FDB   EXP4
-       FDB   MANM
-       FDB   SLIMEM
-       FDB   NOT
-       FDB   NOT
-       FDB   NOT
-       FDB   GEMM
-       FDB   BOULDM
-       FDB   NOT
-       FDB   NOT
-       FDB   NOT
+
+; Jump table to routine for updating the different cave elements.
+; Each element handler routine has the following contract.
+;
+; Inputs:
+;   X         Points to the cave state currently being processed
+;
+; Destroys: A
+JUMPS  FDB   SKULLM         ; skull monster
+       FDB   ALIENM         ; alien monster
+       FDB   EXP1           ; explosion stage 1
+       FDB   EXP2           ; explosion stage 2
+       FDB   EXP3           ; explosion stage 3
+       FDB   EXP4           ; explosion stage 4
+       FDB   MANM           ; player
+       FDB   SLIMEM         ; slime
+       FDB   NOT            ; dug out tunnel (aka, air)
+       FDB   NOT            ; dirt
+       FDB   NOT            ; exit
+       FDB   GEMM           ; diamond
+       FDB   BOULDM         ; boulder
+       FDB   NOT            ; wall
+       FDB   NOT            ; cave border
+       FDB   NOT            ; hidden exit
+
 NOT    RTS
+
 EXP1   LDA   #$83
        STA   ,X
        RTS
@@ -2127,16 +2163,21 @@ LAB2D  LDA   #1
        CLR   SFLAG1
        STA   SFLAG2
        STA   ALIVE
-MOVALL LDX   #STAGE+41
+
+; Update all cave elements.  X keeps track of the current cave element
+; to update.  This code uses b7 of every cave element to keep track of
+; cave elements already updated.  Each cave element should set b7 when
+; it is updated.  b7 is cleared again when it is safe to do so...
+MOVALL LDX   #STAGE+41                    ; skip the top cave border
 LOOPE  LDB   ,X
        LSLB
-       BCS   LAB2E
+       BCS   LAB2E                        ; skip updating if b7 is set
        LDB   ,X
        ANDB  #$0F
        LSLB
        LDY   #JUMPS
-       JSR   [B,Y]
-LAB2E  LDA   -81,X
+       JSR   [B,Y]                        ; call cave element handler
+LAB2E  LDA   -81,X                        ; reset element updated flag
        ANDA  #$7F
        STA   -81,X
        LEAX  1,X
@@ -2156,7 +2197,7 @@ SLMGEM LDA   CCAVE
        TST   SFLAG2
        BEQ   SLMBOL
        CLR   SFLAG1
-       LDX   #STAGE+40
+       LDX   #STAGE+40                    ; convert slime to diamonds
 LOOP11 LDA   ,X+
        ANDA  #$0F
        CMPA  #$07
@@ -2171,7 +2212,7 @@ SLMBOL LDA   SFLAG1
        CMPA  #150
        BLO   DECBON
        LDX   #STAGE+40
-LOOP18 LDA   ,X+
+LOOP18 LDA   ,X+                          ; convert slime to boulders
        ANDA  #$0F
        CMPA  #$07
        BNE   LAB1E
@@ -2218,7 +2259,8 @@ TSTEXT TST   EFLAG
        TST   DLEFT
        BNE   TSTBUT
        CLR   EFLAG
-       LDX   #STAGE
+
+       LDX   #STAGE                       ; reveal the exit
 LOOP13 LDA   ,X+
        ANDA  #$0F
        CMPA  #$0F
@@ -2227,6 +2269,7 @@ LOOP13 LDA   ,X+
        STA   -1,X
 NESTE2 CMPX  #STAGE+1000
        BLO   LOOP13
+
        LDA   $FF23
        ORA   #$08
        STA   $FF23

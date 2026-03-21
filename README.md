@@ -89,4 +89,4 @@ Licensing
 *Stone Raider II* is released under an open source license.  See the file License.txt in this repository for details.
 
 ---
-Copyright 1986, 2009-2024 Rolf Michelsen
+Copyright 1986, 2009-2026 Rolf Michelsen
